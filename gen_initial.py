@@ -15,14 +15,16 @@ sys.path.append(BASE_DIR)
 sys.path.append(os.path.join(BASE_DIR, 'models'))
 sys.path.append(os.path.join(BASE_DIR, 'utils'))
 
+import provider
+
 parser = argparse.ArgumentParser()
 parser.add_argument('--gpu', type=int, default=0, help='GPU to use [default: GPU 0]')
 parser.add_argument('--model', default='pointnet_cls', help='Model name: pointnet_cls or pointnet_cls_basic [default: pointnet_cls]')
 parser.add_argument('--batch_size', type=int, default=8, help='Batch Size during training [default: 1]')
-parser.add_argument('--num_point', type=int, default=1024, help='Point Number [256/512/1024/2048] [default: 1024]')
+parser.add_argument('--num_point', type=int, default=32, help='Point Number [256/512/1024/2048] [default: 1024]')
 parser.add_argument('--num_cluster', type=int, default=3, help='cluster number')
 
-parser.add_argument('--model_path', default='log/model.ckpt', help='model checkpoint file path [default: log/model.ckpt]')
+parser.add_argument('--model_path', default='log/model32-acc', help='model checkpoint file path [default: log/model.ckpt]')
 parser.add_argument('--critical_path', default='critical', help='the path to dump critical point')
 parser.add_argument('--data_dir', default='data', help='data folder path [data]')
 
@@ -48,7 +50,21 @@ MAX_NUM = FLAGS.max_num
 EPS = FLAGS.eps
 MIN_NUM = FLAGS.min_num
 
-attacked_data_all=joblib.load(os.path.join(DATA_DIR,'attacked_data.z'))
+# attacked_data_all=joblib.load(os.path.join(DATA_DIR,'attacked_data.z'))
+
+provider.load_csvs(NUM_POINT, True)
+attacked_data_all = [[], [], [], []]
+current_data, current_label = provider.train_split()
+current_label = np.squeeze(current_label)
+
+for i, val in enumerate(current_data):
+    attacked_data_all[current_label[i]].append(val)
+
+circles = np.asarray(attacked_data_all[0])
+diamonds = np.asarray(attacked_data_all[1])
+triangles = np.asarray(attacked_data_all[2])
+inverted = np.asarray(attacked_data_all[3])
+attacked_data_all = [circles, diamonds, triangles, inverted]
 
 def main():
     is_training = False
@@ -81,7 +97,7 @@ def main():
 
     }
 
-    for target in range(40):#40 is the number of classes
+    for target in range(4):#40 is the number of classes
         clustered_cri_list=[]
         att_critical=get_critical_points_simple(sess,ops,attacked_data_all[target][:BATCH_SIZE])
         #joblib.dump(att_critical,os.path.join(BASE_DIR,CRIRICAL_PATH,'att_critical_{}.z' .format(target)))

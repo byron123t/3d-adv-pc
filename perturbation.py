@@ -10,19 +10,20 @@ sys.path.append(BASE_DIR)
 sys.path.append(os.path.join(BASE_DIR, 'models'))
 sys.path.append(os.path.join(BASE_DIR, 'utils'))
 
-import tf_nndistance
-import joblib
+# import tf_nndistance
+# import joblib
+import provider
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--gpu', type=int, default=0, help='GPU to use [default: GPU 0]')
 parser.add_argument('--model', default='pointnet_cls', help='Model name: pointnet_cls or pointnet_cls_basic [default: pointnet_cls]')
 parser.add_argument('--log_dir', default='log', help='Log dir [default: log]')
-parser.add_argument('--batch_size', type=int, default=5, help='Batch Size for attack [default: 5]')
-parser.add_argument('--num_point', type=int, default=1024, help='Point Number [256/512/1024/2048] [default: 1024]')
+parser.add_argument('--batch_size', type=int, default=10, help='Batch Size for attack [default: 5]')
+parser.add_argument('--num_point', type=int, default=32, help='Point Number [256/512/1024/2048] [default: 1024]')
 parser.add_argument('--data_dir', default='data', help='data folder path [data]')
 parser.add_argument('--dump_dir', default='perturbation', help='dump folder path [perturbation]')
 
-parser.add_argument('--target', type=int, default=5, help='target class index')
+parser.add_argument('--target', type=int, default=0, help='target class index')
 parser.add_argument('--lr_attack', type=float, default=0.01, help='learning rate for optimization based attack')
 
 parser.add_argument('--initial_weight', type=float, default=10, help='initial value for the parameter lambda')
@@ -35,7 +36,7 @@ FLAGS = parser.parse_args()
 
 BATCH_SIZE = FLAGS.batch_size
 NUM_POINT = FLAGS.num_point
-MODEL_PATH = os.path.join(FLAGS.log_dir, "model.ckpt")
+MODEL_PATH = os.path.join(FLAGS.log_dir, "model{}-acc".format(NUM_POINT))
 GPU_INDEX = FLAGS.gpu
 MODEL = importlib.import_module(FLAGS.model) # import network module
 DUMP_DIR = FLAGS.dump_dir
@@ -46,13 +47,52 @@ TARGET=FLAGS.target
 LR_ATTACK=FLAGS.lr_attack
 #WEIGHT=FLAGS.weight
 
-attacked_data_all=joblib.load(os.path.join(DATA_DIR,'attacked_data.z'))
+LOG_FOUT1 = open('dump/perturbation_dist_{}.txt'.format(TARGET), 'w')
+LOG_FOUT1.write(str(FLAGS)+'\n')
+
+LOG_FOUT2 = open('dump/perturbation_acc_{}.txt'.format(TARGET), 'w')
+LOG_FOUT2.write(str(FLAGS)+'\n')
+
+LOG_FOUT3 = open('dump/perturbation_orig_{}.txt'.format(TARGET), 'w')
+LOG_FOUT3.write(str(FLAGS)+'\n')
+
+LOG_FOUT4 = open('dump/perturbation_adv_{}.txt'.format(TARGET), 'w')
+LOG_FOUT4.write(str(FLAGS)+'\n')
+
+# attacked_data_all=joblib.load(os.path.join(DATA_DIR,'attacked_data.z'))
+provider.load_csvs(NUM_POINT, True)
+attacked_data_all = [[], [], [], []]
+current_data, current_label = provider.train_split()
+current_label = np.squeeze(current_label)
+
+for i, val in enumerate(current_data):
+    attacked_data_all[current_label[i]].append(val)
+
+circles = np.asarray(attacked_data_all[0])
+diamonds = np.asarray(attacked_data_all[1])
+triangles = np.asarray(attacked_data_all[2])
+inverted = np.asarray(attacked_data_all[3])
+attacked_data_all = [circles, diamonds, triangles, inverted]
 
 INITIAL_WEIGHT=FLAGS.initial_weight
 UPPER_BOUND_WEIGHT=FLAGS.upper_bound_weight
 #ABORT_EARLY=False
 BINARY_SEARCH_STEP=FLAGS.step
 NUM_ITERATIONS=FLAGS.num_iter
+
+
+def log_string(out_str, log):
+    log.write('{}\n'.format(out_str))
+    log.flush()
+    print(out_str)
+
+
+def log_list(out_str, log):
+    for i in out_str:
+        log.write('{}\n'.format(i))
+    log.flush()
+    print(out_str)
+
 
 def attack():
     is_training = False
@@ -111,15 +151,31 @@ def attack():
         print('model restored!')
 
         dist_list=[]
-        for victim in [5,35,33,22,37,2,4,0,30,8]:#the class index of selected 10 largest classed in ModelNet40
+        orig_loss_list=[]
+        adv_loss_list=[]
+        correct = 0
+        total = 0
+        
+        for victim in [0, 1, 2, 3]:#the class index of selected 10 largest classed in ModelNet40
             if victim == TARGET:
                 continue
-            attacked_data=attacked_data_all[victim]#attacked_data shape:25*1024*3
-            for j in range(25//BATCH_SIZE):
-                dist,img=attack_one_batch(sess,ops,attacked_data[j*BATCH_SIZE:(j+1)*BATCH_SIZE])
+            np.random.shuffle(attacked_data_all)
+            attacked_data=attacked_data_all[victim][:50]#attacked_data shape:25*32*3
+            for j in range(50//BATCH_SIZE):
+                dist,img,adv_acc,orig_loss,adv_loss=attack_one_batch(sess,ops,attacked_data[j*BATCH_SIZE:(j+1)*BATCH_SIZE])
                 dist_list.append(dist)
+                orig_loss_list.append(orig_loss)
+                adv_loss_list.append(adv_loss)
+                correct += adv_acc
+                total += BATCH_SIZE
+                np.save(os.path.join('.',DUMP_DIR,'{}_{}_{}_orig.npy'.format(victim,TARGET,j)),attacked_data[j*BATCH_SIZE:(j+1)*BATCH_SIZE])
                 np.save(os.path.join('.',DUMP_DIR,'{}_{}_{}_adv.npy' .format(victim,TARGET,j)),img)
                 #np.save(os.path.join('.',DUMP_DIR,'{}_{}_{}_orig.npy' .format(victim,TARGET,j)),attacked_data[j*BATCH_SIZE:(j+1)*BATCH_SIZE])#dump originial example for comparison
+        log_list(dist_list, LOG_FOUT1)
+        log_string(str(correct/total), LOG_FOUT2)
+        log_list(orig_loss_list, LOG_FOUT3)
+        log_list(adv_loss_list, LOG_FOUT4)
+
         #joblib.dump(dist_list,os.path.join('.',DUMP_DIR,'dist_{}.z' .format(TARGET)))#log distance information for performation evaluation
 def attack_one_batch(sess,ops,attacked_data):
 
@@ -142,8 +198,12 @@ def attack_one_batch(sess,ops,attacked_data):
 
    
     o_bestdist = [1e10] * BATCH_SIZE
+    o_bestloss_orig = [-1] * BATCH_SIZE
+    o_bestloss_adv = [1e10] * BATCH_SIZE
     o_bestscore = [-1] * BATCH_SIZE
     o_bestattack = np.ones(shape=(BATCH_SIZE,NUM_POINT,3))
+
+    print(attacked_data.shape)
 
     feed_dict = {ops['pointclouds_pl']: attacked_data,
          ops['is_training_pl']: is_training,
@@ -194,6 +254,8 @@ def attack_one_batch(sess,ops,attacked_data):
                     o_bestdist[e]=dist
                     o_bestscore[e]=pred
                     o_bestattack[e] = ii
+                    o_bestloss_orig[e] = loss
+                    o_bestloss_adv[e] = adv_loss_val
 
         # adjust the constant as needed
         for e in range(BATCH_SIZE):
@@ -209,7 +271,7 @@ def attack_one_batch(sess,ops,attacked_data):
         #bestdist_prev=deepcopy(bestdist)
 
     print(" Successfully generated adversarial exampleson {} of {} instances." .format(sum(lower_bound > 0), BATCH_SIZE))
-    return o_bestdist,o_bestattack
+    return o_bestdist,o_bestattack,sum(lower_bound > 0),o_bestloss_orig,o_bestloss_adv
 
 
 if __name__=='__main__':
