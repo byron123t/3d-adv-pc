@@ -1,17 +1,27 @@
-# Generating 3D Adversarial Point Clouds
-By [Chong Xiang](https://nsec.sjtu.edu.cn/~chongxiang/), [Charles R. Qi](http://charlesrqi.com), [Bo Li](http://www.crystal-boli.com/home.html)
+# Rearchitecting Classification Frameworks For Increased Robustness (Generating 3D Adversarial Point Clouds Fork)
+Point cloud experiments: [Brian Tang](https://byron123t.github.io/)
+In collaboration with: [Varun Chandrasekaran](http://pages.cs.wisc.edu/~chandrasekaran/), [Nicholas Papernot](https://www.papernot.fr/), [Kassem Fawaz](https://kassemfawaz.com/), [Somesh Jha](http://pages.cs.wisc.edu/~jha/), [Xi Wu](http://andrewxiwu.github.io/)
 
-Sample code for CVPR 2019 paper "Generating 3D Adversarial Point Clouds" [arXiv](https://arxiv.org/abs/1809.07016)
+Sample code for our paper, "Rearchitecting Classification Frameworks For Increased Robustness" [arXiv]()
 
-<img src="https://github.com/xiangchong1/test/blob/master/doc/attack_pipeline.png" width="50%" alt="attack pipeline" align=center>
-
-## Requirement
-This code is tested with Python 2.7 and Tensorflow 1.10.0
-
-Other required packages include numpy, joblib, sklearn, etc. 
+## Requirements
+This code is tested with Python 3.5.2
+Other required packages can be found in requirements.txt
+Sample virtual environment commands:
+```
+python3 -m venv path_to_environment/
+source path_to_environment/bin/activate
+pip install -r requirements.txt
+```
 
 ## Usage
+Data processing scripts:
+- download_kitti.py -- Downloads the entirety of the [KITTI dataset](http://www.cvlibs.net/datasets/kitti/index.php)
+- crop.py -- Crops the RGB images using the annotations and outputs to data/crop/
+- pc_crop.py -- Crops the traffic sign point clouds using the annotations and outputs to data/
 There are four Python scripts in the root directorty for different attacks:
+- train.py -- Train a PointNet model
+- evaluate.py -- Evaluate natural accuracy of the model
 - perturbation.py -- Adversarial Point Pertubations
 - independent.py -- Adversarial Independent Points
 - cluster.py -- Adversarial Clusters
@@ -25,15 +35,11 @@ Other parameters can be founded in the script, or run `python perturbation.py -h
 
 
 ## Other files
-- log/model.ckpt -- the victim model used in the paper. Download [link](https://drive.google.com/open?id=1T99mJfyuxFCcMQuvw71jgn6_FlUEOj08). 
-- data/attacked_data.z -- the victim data used in the paper. It can be loaded with `joblib.load`, resulting in a Python list whose element is a numpy array (shape: 25\*1024\*3; 25 objects of the same class, each object is represented by 1024 points)
 - **gen_initial.py** -- used to generate initial points for adversarial cluster/object. The script uses DBSCAN to cluster the generated critical points.
 - critical -- the default directory to dump the generated initial points
-- data/airplane.py -- the airplane object used in the paper as a uav for the adversarial object. can be loaded with ```np.load```.
 - utils/tf_nndistance -- a self-defined tensorlfow op used for Chamfer/Hausdorff distance calculation. Use tf_nndistance_compile.sh to compile the op. The bash code may need modification according to the version and installtion path of CUDA. Note that it should be OK to directly calculate Chamfer/Hausdorff distance with available tf ops instead of tf_nndistance.
 
 ## Misc
-- The sample adversarial point clouds can be downloaded [here](https://drive.google.com/open?id=1KLtJXFpq70YkB2DAxfUYyrWcv8kbkUJd). The targeted model is log/model.ckpt
-- The aligned version of ModelNet40 data (in point cloud data format) can be downloaded [here](https://drive.google.com/open?id=1m7BmdtX1vWrpl9WRX5Ds2qnIeJHKmE36).
-- The visulization in the paper is rendered with MeshLab
-- Please open an issue or contact Chong Xiang (xiangchong97@gmail.com) if there is any question.
+- Forked from this [repository](https://github.com/xiangchong1/3d-adv-pc)
+- We leave integrating other datasets and generalizable code for creating and evaluating hierarchies as future work.
+- Please open an issue or contact Brian Tang (byron123t@gmail.com) if there is any question.

@@ -51,16 +51,16 @@ NUM_ADD=FLAGS.add_num
 LR_ATTACK=FLAGS.lr_attack
 #WEIGHT=FLAGS.weight
 
-LOG_FOUT1 = open('dump/cluster_dist_{}.txt'.format(TARGET), 'w')
+LOG_FOUT1 = open(os.path.join(DUMP_DIR, 'cluster_dist_{}.txt'.format(TARGET)), 'w')
 LOG_FOUT1.write(str(FLAGS)+'\n')
 
-LOG_FOUT2 = open('dump/cluster_acc_{}.txt'.format(TARGET), 'w')
+LOG_FOUT2 = open(os.path.join(DUMP_DIR, 'cluster_acc_{}.txt'.format(TARGET)), 'w')
 LOG_FOUT2.write(str(FLAGS)+'\n')
 
-LOG_FOUT3 = open('dump/cluster_orig_{}.txt'.format(TARGET), 'w')
+LOG_FOUT3 = open(os.path.join(DUMP_DIR, 'cluster_orig_{}.txt'.format(TARGET)), 'w')
 LOG_FOUT3.write(str(FLAGS)+'\n')
 
-LOG_FOUT4 = open('dump/cluster_adv_{}.txt'.format(TARGET), 'w')
+LOG_FOUT4 = open(os.path.join(DUMP_DIR, 'cluster_adv_{}.txt'.format(TARGET)), 'w')
 LOG_FOUT4.write(str(FLAGS)+'\n')
 
 # attacked_data_all=joblib.load(os.path.join(DATA_DIR,'attacked_data.z'))

@@ -1,2 +1,5 @@
-model_checkpoint_path: "model.ckpt"
-all_model_checkpoint_paths: "model.ckpt"
+model_checkpoint_path: "model32.ckpt"
+all_model_checkpoint_paths: "model32-acc"
+all_model_checkpoint_paths: "model32-class"
+all_model_checkpoint_paths: "model32-loss"
+all_model_checkpoint_paths: "model32.ckpt"

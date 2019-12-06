@@ -1,11 +1,12 @@
-import os, wget, zipfile
+import os, wget, zipfile, sys
 
-
-PATH = './data/kitti_dataset/'
-EXTRACTS = os.path.join(path, 'extracts/')
-TEMP = os.path.join(path, 'temp_downloads/')
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(BASE_DIR)
+DATA_PATH = os.path.join(BASE_DIR, 'data')
+PATH = os.path.join(DATA_PATH, 'kitti_dataset')
+EXTRACTS = os.path.join(PATH, 'extracts')
+TEMP = os.path.join(PATH, 'temp_downloads')
 BASE = 'https://s3.eu-central-1.amazonaws.com/avg-kitti/raw_data/'
-
 
 
 # A download script for the KITTI dataset. Not all drives are included in the files array.
@@ -13,38 +14,38 @@ def download(files):
 	for i in files:
 		will_download = True
 		will_extract = True
+		file_path = os.path.join(TEMP, i + '_sync.zip')
 
 		for j in os.listdir(TEMP):
 			if i in j:
 				will_download = False
-				file = os.path.join(TEMP, j)
 				break
 
 		for j in os.listdir(EXTRACTS):
 			for k in os.listdir(os.path.join(EXTRACTS, j)):
 				if i in k:
 					will_extract = False
-					file = os.path.join(TEMP, j)
 					break
 
 		if will_download:
 			url = BASE + i + '/' + i + '_sync.zip'
 			print('Downloading: {}'.format(url))
-			file = wget.download(url, os.path.join(TEMP, i, '_sync.zip'))
+			wget.download(url, file_path)
 		else:
-			print('{} already downloaded'.format(os.path.join(TEMP, i, '_sync.zip')))
-			file = os.path.join(TEMP, i, '_sync.zip')
+			print('{} already downloaded'.format(file_path))
 
 		if will_extract:
-			print('Extracting: {}'.format(file))
-			zip_ref = zipfile.ZipFile(file)
+			print('\nExtracting: {}'.format(file_path))
+			zip_ref = zipfile.ZipFile(file_path)
 			zip_ref.extractall(EXTRACTS)
 			zip_ref.close()
 		else:
-			print('{} already extracted'.format(file))
+			print('{} already extracted'.format(file_path))
 
 
 def main():
+	if not os.path.exists(DATA_PATH):
+		os.mkdir(DATA_PATH)
 	if not os.path.exists(PATH):
 		os.mkdir(PATH)
 	if not os.path.exists(EXTRACTS):

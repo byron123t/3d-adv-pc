@@ -1,6 +1,12 @@
+import os, sys
 import numpy as np
 import pandas as pd
 from math import ceil
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(BASE_DIR)
+POINTS_PATH = os.path.join(BASE_DIR, 'data/points')
+SPLIT_PATH = os.path.join(BASE_DIR, 'data/split')
 
 
 def train_test_split(x, y, test_size, train_file, test_file):
@@ -30,29 +36,19 @@ def train_test_split(x, y, test_size, train_file, test_file):
 
 
 def main():
-	# x = np.load('data/points/points32.npy')
-	# y = pd.read_csv('data/labels/labels32.csv', header=None).values
-	# train_test_split(x, y, 0.2, 'data/split/train32.csv', 'data/split/test32.csv')
+	if not os.path.exists(POINTS_PATH):
+		print('Please run augment.py to augment the point clouds first.')
+		return
+	if not os.path.exists(SPLIT_PATH):
+		os.mkdir(SPLIT_PATH)
 
-	# x = np.load('data/points/points64.npy')
-	# y = pd.read_csv('data/labels/labels64.csv', header=None).values
-	# train_test_split(x, y, 0.2, 'data/split/train64.csv', 'data/split/test64.csv')
+	x = np.load(os.path.join(POINTS_PATH, 'points_crop.npy'))
+	y = pd.read_csv(os.path.join(POINTS_PATH, 'labels_crop.csv'), header=None).values
+	train_test_split(x, y, 0.2, os.path.join(SPLIT_PATH, 'train_points.csv'), os.path.join(SPLIT_PATH, 'test_points.csv'))	
 
-	# x = np.load('data/points/points128.npy')
-	# y = pd.read_csv('data/labels/labels128.csv', header=None).values
-	# train_test_split(x, y, 0.2, 'data/split/train128.csv', 'data/split/test128.csv')
-
-	# x = np.load('data/points/points256.npy')
-	# y = pd.read_csv('data/labels/labels256.csv', header=None).values
-	# train_test_split(x, y, 0.2, 'data/split/train256.csv', 'data/split/test256.csv')
-
-#	x = np.load('data/points/points0.npy')
-#	y = pd.read_csv('data/labels/labels0.csv', header=None).values
-#	train_test_split(x, y, 0.2, 'data/split/train0.csv', 'data/split/test0.csv')
-
-	x = np.load('data/points/augment32.npy')
-	y = pd.read_csv('data/labels/augment32.csv', header=None).values
-	train_test_split(x, y, 0.2, 'data/split/train_augment32.csv', 'data/split/test_augment32.csv')	
+	x = np.load(os.path.join(POINTS_PATH, 'augment.npy'))
+	y = pd.read_csv(os.path.join(POINTS_PATH, 'augment.csv'), header=None).values
+	train_test_split(x, y, 0.2, os.path.join(SPLIT_PATH, 'train_augment.csv'), os.path.join(SPLIT_PATH, 'test_augment.csv'))
 
 if __name__ == '__main__':
 	main()

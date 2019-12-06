@@ -12,14 +12,16 @@ sys.path.append(BASE_DIR)
 
 # Download dataset for point cloud classification
 DATA_DIR = os.path.join(BASE_DIR, 'data')
+SPLIT_DIR = os.path.join(DATA_DIR, 'split')
+POINT_DIR = os.path.join(DATA_DIR, 'points')
 if not os.path.exists(DATA_DIR):
     os.mkdir(DATA_DIR)
-if not os.path.exists(os.path.join(DATA_DIR, 'modelnet40_ply_hdf5_2048')):
-    www = 'https://shapenet.cs.stanford.edu/media/modelnet40_ply_hdf5_2048.zip'
-    zipfile = os.path.basename(www)
-    os.system('wget %s; unzip %s' % (www, zipfile))
-    os.system('mv %s %s' % (zipfile[:-4], DATA_DIR))
-    os.system('rm %s' % (zipfile))
+# if not os.path.exists(os.path.join(DATA_DIR, 'modelnet40_ply_hdf5_2048')):
+#     www = 'https://shapenet.cs.stanford.edu/media/modelnet40_ply_hdf5_2048.zip'
+#     zipfile = os.path.basename(www)
+#     os.system('wget %s; unzip %s' % (www, zipfile))
+#     os.system('mv %s %s' % (zipfile[:-4], DATA_DIR))
+#     os.system('rm %s' % (zipfile))
 
 
 def shuffle_data(data, labels):
@@ -133,6 +135,13 @@ def loadDataFile_with_seg(filename):
 
 
 def load_csvs(num_points, augment):
+    if not os.path.exists(POINT_DIR):
+        print('Please run pc_crop.py to crop point clouds first.')
+        return
+    if not os.path.exists(SPLIT_DIR):
+        print('Please run split.py to split into training and testing set first.')
+        return
+
     global X_TRAIN
     global X_TEST
     global Y_TRAIN
@@ -142,16 +151,15 @@ def load_csvs(num_points, augment):
     test = []
 
     if augment:
-        name = 'augment'
-        ending = '_augment'
+        x = np.load(os.path.join(POINT_DIR, 'augment.npy'))
+        y = pd.read_csv(os.path.join(POINT_DIR, 'augment.csv'), header=None).values
+        raw_train = pd.read_csv(os.path.join(SPLIT_DIR, 'train_augment.csv'), header=None).values
+        raw_test = pd.read_csv(os.path.join(SPLIT_DIR, 'test_augment.csv'), header=None).values
     else:
-        name = 'points'
-        ending = ''
-
-    x = np.load('data/points/{}{}.npy'.format(name, num_points))
-    y = pd.read_csv('data/labels/{}{}.csv'.format(name, num_points), header=None).values
-    raw_train = pd.read_csv('data/split/train{}{}.csv'.format(ending, num_points), header=None).values
-    raw_test = pd.read_csv('data/split/test{}{}.csv'.format(ending, num_points), header=None).values
+        x = np.load(os.path.join(POINT_DIR, 'points_crop.npy'))
+        y = pd.read_csv(os.path.join(POINT_DIR, 'labels_crop.csv'), header=None).values
+        raw_train = pd.read_csv(os.path.join(SPLIT_DIR, 'train_points.csv'), header=None).values
+        raw_test = pd.read_csv(os.path.join(SPLIT_DIR, 'test_points.csv'), header=None).values
 
     for i, val in enumerate(raw_train):
         train.append(val[0])

@@ -1,8 +1,10 @@
 import sys, cv2, time, os
 
-KITTI_PATH = './data/kitti_dataset/extracts'
-LABEL_PATH = './data/txt/'
-CROPS_PATH = './data/crop/'
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(BASE_DIR)
+KITTI_PATH = os.path.join(BASE_DIR, 'data/kitti_dataset/extracts')
+LABEL_PATH = os.path.join(BASE_DIR, 'data/txt')
+CROPS_PATH = os.path.join(BASE_DIR, 'data/crop')
 
 
 def crop(path, image, x, y, w, h, file):

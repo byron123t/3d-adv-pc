@@ -47,16 +47,16 @@ TARGET=FLAGS.target
 LR_ATTACK=FLAGS.lr_attack
 #WEIGHT=FLAGS.weight
 
-LOG_FOUT1 = open('dump/perturbation_dist_{}.txt'.format(TARGET), 'w')
+LOG_FOUT1 = open(os.path.join(DUMP_DIR, 'perturbation_dist_{}.txt'.format(TARGET)), 'w')
 LOG_FOUT1.write(str(FLAGS)+'\n')
 
-LOG_FOUT2 = open('dump/perturbation_acc_{}.txt'.format(TARGET), 'w')
+LOG_FOUT2 = open(os.path.join(DUMP_DIR, 'perturbation_acc_{}.txt'.format(TARGET)), 'w')
 LOG_FOUT2.write(str(FLAGS)+'\n')
 
-LOG_FOUT3 = open('dump/perturbation_orig_{}.txt'.format(TARGET), 'w')
+LOG_FOUT3 = open(os.path.join(DUMP_DIR, 'perturbation_orig_{}.txt'.format(TARGET)), 'w')
 LOG_FOUT3.write(str(FLAGS)+'\n')
 
-LOG_FOUT4 = open('dump/perturbation_adv_{}.txt'.format(TARGET), 'w')
+LOG_FOUT4 = open(os.path.join(DUMP_DIR, 'perturbation_adv_{}.txt'.format(TARGET)), 'w')
 LOG_FOUT4.write(str(FLAGS)+'\n')
 
 # attacked_data_all=joblib.load(os.path.join(DATA_DIR,'attacked_data.z'))

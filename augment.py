@@ -10,6 +10,7 @@ sys.path.append(os.path.join(BASE_DIR, 'utils'))
 import provider
 import tf_util
 NUM_POINT = 32
+POINT_PATH = os.path.join(BASE_DIR, 'data/points')
 
 
 def augment(i, cur_data, cur_label, cur_meta, points, labels, meta):
@@ -23,9 +24,13 @@ def augment(i, cur_data, cur_label, cur_meta, points, labels, meta):
 
 
 def main():
-    current_data = np.load('data/points/points{}.npy'.format(NUM_POINT))
-    current_label = pd.read_csv('data/labels/labels{}.csv'.format(NUM_POINT), header=None).values
-    current_meta = pd.read_csv('data/metadata/metadata{}.csv'.format(NUM_POINT), header=None).values
+    if not os.path.exists(POINT_PATH):
+        print('Please run pc_crop.py first to crop point clouds')
+        return
+
+    current_data = np.load(os.path.join(POINT_PATH, 'points_crop.npy'))
+    current_label = pd.read_csv(os.path.join(POINT_PATH, 'labels_crop.csv'), header=None).values
+    current_meta = pd.read_csv(os.path.join(POINT_PATH, 'metadata_crop.csv'), header=None).values
     # train = pd.read_csv('data/split/train32.csv', header=None).values
 
     # provider.load_csvs(NUM_POINT)
@@ -44,8 +49,6 @@ def main():
     # current_label = np.take(train)
 
     for i, val in enumerate(current_data):
-        print(len(current_label))
-
         if current_label[i] == 0:
             points, labels, meta = augment(i, current_data, current_label, current_meta, points, labels, meta)
 
@@ -63,9 +66,9 @@ def main():
 
     print(len(points))
 
-    np.save('data/points/augment{}.npy'.format(NUM_POINT), np.reshape(points, (-1, NUM_POINT, 3)))
-    pd.DataFrame(labels).to_csv('data/labels/augment{}.csv'.format(NUM_POINT), header=None, index=None)
-    pd.DataFrame(meta).to_csv('data/metadata/augment{}.csv'.format(NUM_POINT), header=None, index=None)
+    np.save(os.path.join(POINT_PATH, 'augment.npy'), np.reshape(points, (-1, NUM_POINT, 3)))
+    pd.DataFrame(labels).to_csv(os.path.join(POINT_PATH, 'augment.csv'), header=None, index=None)
+    pd.DataFrame(meta).to_csv(os.path.join(POINT_PATH, 'meta-augment.csv'), header=None, index=None)
 
 
 if __name__ == '__main__':
