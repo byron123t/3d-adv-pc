@@ -1,8 +1,8 @@
 # Rearchitecting Classification Frameworks For Increased Robustness (Generating 3D Adversarial Point Clouds Fork)
 Point cloud experiments: [Brian Tang](https://byron123t.github.io/)
-In collaboration with: [Varun Chandrasekaran](http://pages.cs.wisc.edu/~chandrasekaran/), [Nicholas Papernot](https://www.papernot.fr/), [Kassem Fawaz](https://kassemfawaz.com/), [Somesh Jha](http://pages.cs.wisc.edu/~jha/), [Xi Wu](http://andrewxiwu.github.io/)
+[Varun Chandrasekaran](http://pages.cs.wisc.edu/~chandrasekaran/), [Brian Tang](https://byron123t.github.io/), [Nicholas Papernot](https://www.papernot.fr/), [Kassem Fawaz](https://kassemfawaz.com/), [Somesh Jha](http://pages.cs.wisc.edu/~jha/), [Xi Wu](http://andrewxiwu.github.io/)
 
-Sample code for our paper, "Rearchitecting Classification Frameworks For Increased Robustness" [arXiv]()
+Sample code for our paper, "Rearchitecting Classification Frameworks For Increased Robustness" [arXiv](https://arxiv.org/abs/1905.10900)
 
 ## Requirements
 This code is tested with Python 3.5.2
@@ -32,8 +32,6 @@ The basic usage is `python perturbation.py --target=5`.
 
 Other parameters can be founded in the script, or run `python perturbation.py -h`. The default parameters are the ones used in the paper.
 
-
-
 ## Other files
 - **gen_initial.py** -- used to generate initial points for adversarial cluster/object. The script uses DBSCAN to cluster the generated critical points.
 - critical -- the default directory to dump the generated initial points
@@ -43,3 +41,14 @@ Other parameters can be founded in the script, or run `python perturbation.py -h
 - Forked from this [repository](https://github.com/xiangchong1/3d-adv-pc)
 - We leave integrating other datasets and generalizable code for creating and evaluating hierarchies as future work.
 - Please open an issue or contact Brian Tang (byron123t@gmail.com) if there is any question.
+
+## Cite
+```
+@article{chandrasekaran2019,
+  title={Rearchitecting Classification Frameworks For Increased Robustness},
+  author={Chandrasekaran, Varun and Tang, Brian and Papernot, Nicolas and Fawaz, Kassem and Jha, Somesh and Wu, Xi},
+  journal={arXiv preprint arXiv:1905.10900},
+  year={2019}
+}
+```
+
